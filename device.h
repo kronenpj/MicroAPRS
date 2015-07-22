@@ -27,6 +27,13 @@
     #define CUSTOM_FRAME_SIZE 330
 #endif
 
+//KISS CRC settings
+#if SERIAL_PROTOCOL == PROTOCOL_KISS
+//    #define CRC_KISS CRC_NONE
+//    OR
+    #define CRC_KISS CRC_SMACK
+#endif
+
 // Serial settings
 #define BAUD 9600
 #define SERIAL_DEBUG false

@@ -1,6 +1,9 @@
 #define PROTOCOL_KISS 0x01
 #define PROTOCOL_SIMPLE_SERIAL 0x02
 
+#define CRC_NONE 0x00
+#define CRC_SMACK 0x01
+
 #define m328p  0x01
 #define m1284p 0x02
 #define m644p  0x03

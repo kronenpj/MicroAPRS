@@ -42,7 +42,7 @@ SRC = main.c hardware/Serial.c hardware/AFSK.c util/CRC-CCIT.c protocol/AX25.c p
 # You can also wrap lines by appending a backslash to the end of the line:
 #SRC += baz.c \
 #xyzzy.c
-
+SRC += util/CRC16.c
 
 
 # List Assembler source files here.
@@ -167,7 +167,7 @@ REMOVE = rm -f
 COPY = cp
 
 HEXSIZE = $(SIZE) --target=$(FORMAT) $(TARGET).hex
-ELFSIZE = $(SIZE) -C $(TARGET).elf
+ELFSIZE = $(SIZE) --mcu=$(MCU) -C $(TARGET).elf
 
 
 
