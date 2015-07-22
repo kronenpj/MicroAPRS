@@ -10,6 +10,7 @@
 
 #if SERIAL_PROTOCOL == PROTOCOL_KISS
     #include "protocol/KISS.h"
+    #include "util/sreset.h"
 #endif
 
 #if SERIAL_PROTOCOL == PROTOCOL_SIMPLE_SERIAL
@@ -38,6 +39,10 @@ AX25Ctx AX25;
 #endif
 
 void init(void) {
+#if SERIAL_PROTOCOL == PROTOCOL_KISS
+    //Disable watchdog after a reset
+    wdt_disarm();
+#endif
     sei();
 
     AFSK_init(&modem);

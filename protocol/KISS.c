@@ -3,6 +3,7 @@
 
 #include "device.h"
 #include "KISS.h"
+#include "../util/sreset.h"
 
 static uint8_t serialBuffer[AX25_MAX_FRAME_LEN]; // Buffer for holding incoming serial data
 AX25Ctx *ax25ctx;
@@ -93,6 +94,11 @@ void kiss_serialCallback(uint8_t sbyte) {
         if (frame_len == 0 && command == CMD_UNKNOWN) {
             // MicroModem supports only one HDLC port, so we
             // strip off the port nibble of the command byte
+            if (sbyte == CMD_RETURN) {
+                //In most TNC this command exit from KISS mode.
+                //In KISS ONLY TNC this reset TNC (Ex. to exit from SMACK mode)
+                soft_reset();
+            }
             sbyte = sbyte & 0x0F;
             command = sbyte;
         } else if (command == CMD_DATA) {

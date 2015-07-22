@@ -42,7 +42,7 @@ SRC = main.c hardware/Serial.c hardware/AFSK.c util/CRC-CCIT.c protocol/AX25.c p
 # You can also wrap lines by appending a backslash to the end of the line:
 #SRC += baz.c \
 #xyzzy.c
-
+SRC += util/sreset.c 
 
 
 # List Assembler source files here.
