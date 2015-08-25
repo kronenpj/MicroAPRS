@@ -24,6 +24,14 @@ void kiss_init(AX25Ctx *ax25, Afsk *afsk, Serial *ser) {
     ax25ctx = ax25;
     serial = ser;
     channel = afsk;
+    #ifdef KISS_BLN_INIT
+     fputc(FEND, &serial->uart0);
+     fputc(0x00, &serial->uart0);
+     printf_P(PSTR("\x82\xa0\xaa\x82\xa0\xa4\x60\xaa\x82\xa0\xa4\xa6\x40\x7e\xae\x92\x88\x8a\x62\x40"
+                   "\xe1\x03\xf0\x3a\x42\x4c\x4e\x39\x20\x20\x20\x20\x20\x3a\x4d\x69\x63\x72\x6f\x41"
+                   "\x50\x52\x53\x20\x4b\x49\x53\x53\x20\x53\x74\x61\x72\x74\x65\x64\x2e\x2e\x2e"));
+     fputc(FEND, &serial->uart0);
+    #endif
 }
 
 void kiss_messageCallback(AX25Ctx *ctx) {

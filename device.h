@@ -27,6 +27,12 @@
     #define CUSTOM_FRAME_SIZE 330
 #endif
 
+#if SERIAL_PROTOCOL == PROTOCOL_KISS
+// Send "UAPRS-15>APUAPR,WIDE1*::BLN9     :MicroAPRS KISS Started..." to serial port
+// when the modem start. This is for debugging purpose.
+    #define KISS_BLN_INIT
+#endif
+
 // Serial settings
 #define BAUD 9600
 #define SERIAL_DEBUG false
