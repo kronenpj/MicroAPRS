@@ -32,6 +32,9 @@
 //    #define CRC_KISS CRC_NONE
 //    OR
     #define CRC_KISS CRC_SMACK
+// Send "UAPRS-15>APUAPR,WIDE1*::BLN9     :MicroAPRS KISS Started..." to serial port
+// when the modem start. This is for debugging purpose.   
+    #define KISS_BLN_INIT
 #endif
 
 // Serial settings
