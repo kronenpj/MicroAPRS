@@ -50,8 +50,7 @@ void kiss_messageCallback(AX25Ctx *ctx) {
   #if CRC_KISS == CRC_SMACK
     if (SMACK_SEND) {
         fputc(0x80, &serial->uart0);
-        crc_out = CRC16_INIT_VAL;
-        crc_out = update_crc16(0x80, crc_out);
+        crc_out = update_crc16(0x80, CRC16_INIT_VAL);
     } else {
        fputc(0x00, &serial->uart0);
     }
@@ -82,7 +81,7 @@ void kiss_messageCallback(AX25Ctx *ctx) {
     //will have a better idea.
     if (SMACK_SEND) {
          // ESCAPE and send low byte crc and high byte crc
-         uint8_t crc = (crc_out & 0xff) ^ 0xff;
+         uint8_t crc = crc_out & 0xff;
          if (crc == FEND) {
              fputc(FESC, &serial->uart0);
              fputc(TFEND, &serial->uart0);
@@ -92,7 +91,7 @@ void kiss_messageCallback(AX25Ctx *ctx) {
          } else {
             fputc(crc, &serial->uart0);
          }
-         crc = (ctx->crc_out >> 8) ^ 0xff;
+         crc = crc_out >> 8;
          if (crc == FEND) {
              fputc(FESC, &serial->uart0);
              fputc(TFEND, &serial->uart0);
@@ -173,8 +172,7 @@ void kiss_serialCallback(uint8_t sbyte) {
         #if CRC_KISS == CRC_SMACK
             if (sbyte & 0x80){
                 SMACK = true;
-                crc_in = CRC16_INIT_VAL;
-                crc_in = update_crc16(sbyte, crc_in);
+                crc_in = update_crc16(sbyte, CRC16_INIT_VAL);
             } else {
                 SMACK = false;
             }
