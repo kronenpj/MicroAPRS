@@ -31,6 +31,15 @@
 // Send "UAPRS-15>APUAPR,WIDE1*::BLN9     :MicroAPRS KISS Started..." to serial port
 // when the modem start. This is for debugging purpose.
     #define KISS_BLN_INIT
+// Reset and restart TNC with command 0xFF
+// !!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!! 
+// !!  Don't use this option with standard  !!
+// !!  Arduino bootloader. This work only   !!
+// !!  if bootloader is WDT safe. You can   !!
+// !!  use Optiboot.                        !!
+// !! https://github.com/Optiboot/optiboot  !!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   #define KISS_RESET
 #endif
 
 // Serial settings

@@ -102,11 +102,13 @@ void kiss_serialCallback(uint8_t sbyte) {
         if (frame_len == 0 && command == CMD_UNKNOWN) {
             // MicroModem supports only one HDLC port, so we
             // strip off the port nibble of the command byte
+            #ifdef KISS_RESET
             if (sbyte == CMD_RETURN) {
                 //In most TNC this command exit from KISS mode.
                 //In KISS ONLY TNC this reset TNC (Ex. to exit from SMACK mode)
                 soft_reset();
             }
+            #endif
             sbyte = sbyte & 0x0F;
             command = sbyte;
         } else if (command == CMD_DATA) {

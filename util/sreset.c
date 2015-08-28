@@ -2,7 +2,7 @@
 
 void wdt_disarm(void)
 {
-    MCUSR = 0;
+    MCUSR &= ~(_BV(WDRF));
     wdt_disable();
 
     return;

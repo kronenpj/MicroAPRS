@@ -39,10 +39,6 @@ AX25Ctx AX25;
 #endif
 
 void init(void) {
-#if SERIAL_PROTOCOL == PROTOCOL_KISS
-    //Disable watchdog after a reset
-    wdt_disarm();
-#endif
     sei();
 
     AFSK_init(&modem);
