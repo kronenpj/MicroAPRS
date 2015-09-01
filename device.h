@@ -40,6 +40,10 @@
 // !! https://github.com/Optiboot/optiboot  !!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    #define KISS_RESET
+//KISS CRC settings
+//    #define CRC_KISS CRC_NONE
+//    OR
+    #define CRC_KISS CRC_SMACK
 #endif
 
 // Serial settings
