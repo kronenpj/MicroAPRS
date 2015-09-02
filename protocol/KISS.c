@@ -10,16 +10,32 @@
     #include "util/CRC16.h"
 #endif
 
+typedef struct { 
+ bool f0:1; 
+ bool f1:1; 
+ bool f2:1; 
+ bool f3:1; 
+ bool f4:1; 
+ bool f5:1; 
+ bool f6:1; 
+ bool f7:1; 
+} PackedBool;
+
 static uint8_t serialBuffer[AX25_MAX_FRAME_LEN]; // Buffer for holding incoming serial data
 AX25Ctx *ax25ctx;
 Afsk *channel;
 Serial *serial;
 size_t frame_len;
-bool IN_FRAME;
-bool ESCAPE;
+uint8_t KISS_FLAGS;
+//bool IN_FRAME;
+//bool ESCAPE;
+#define IN_FRAME ( (volatile PackedBool*)(&KISS_FLAGS) )->f0
+#define ESCAPE   ( (volatile PackedBool*)(&KISS_FLAGS) )->f1
 #if CRC_KISS == CRC_SMACK
-  bool SMACK;
-  bool SMACK_SEND;
+  //bool SMACK;
+  //bool SMACK_SEND;
+  #define SMACK      ( (volatile PackedBool*)(&KISS_FLAGS) )->f2
+  #define SMACK_SEND ( (volatile PackedBool*)(&KISS_FLAGS) )->f3
   uint16_t crc_in;
   uint16_t crc_out;
 #endif
