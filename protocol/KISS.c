@@ -26,16 +26,16 @@ AX25Ctx *ax25ctx;
 Afsk *channel;
 Serial *serial;
 size_t frame_len;
-uint8_t KISS_FLAGS;
+PackedBool KISS_FLAGS;
 //bool IN_FRAME;
 //bool ESCAPE;
-#define IN_FRAME ( (volatile PackedBool*)(&KISS_FLAGS) )->f0
-#define ESCAPE   ( (volatile PackedBool*)(&KISS_FLAGS) )->f1
+#define IN_FRAME KISS_FLAGS.f0
+#define ESCAPE   KISS_FLAGS.f1
 #if CRC_KISS == CRC_SMACK
   //bool SMACK;
   //bool SMACK_SEND;
-  #define SMACK      ( (volatile PackedBool*)(&KISS_FLAGS) )->f2
-  #define SMACK_SEND ( (volatile PackedBool*)(&KISS_FLAGS) )->f3
+  #define SMACK      KISS_FLAGS.f2
+  #define SMACK_SEND KISS_FLAGS.f3
   uint16_t crc_in;
   uint16_t crc_out;
 #endif
