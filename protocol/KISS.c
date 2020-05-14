@@ -1,3 +1,9 @@
+// Copyright Mark Qvist / unsigned.io
+// https://unsigned.io/microaprs
+//
+// Licensed under GPL-3.0. For full info,
+// read the LICENSE file.
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,6 +17,7 @@ Serial *serial;
 size_t frame_len;
 bool IN_FRAME;
 bool ESCAPE;
+bool FLOWCONTROL;
 
 uint8_t command = CMD_UNKNOWN;
 unsigned long custom_preamble = CONFIG_AFSK_PREAMBLE_LEN;
@@ -23,9 +30,14 @@ void kiss_init(AX25Ctx *ax25, Afsk *afsk, Serial *ser) {
     ax25ctx = ax25;
     serial = ser;
     channel = afsk;
+    FLOWCONTROL = false;
 }
 
+//size_t decodes = 0;
 void kiss_messageCallback(AX25Ctx *ctx) {
+    // decodes++;
+    // printf("%d\r\n", decodes);
+
     fputc(FEND, &serial->uart0);
     fputc(0x00, &serial->uart0);
     for (unsigned i = 0; i < ctx->frame_len-2; i++) {
@@ -45,9 +57,16 @@ void kiss_messageCallback(AX25Ctx *ctx) {
 
 void kiss_csma(AX25Ctx *ctx, uint8_t *buf, size_t len) {
     bool sent = false;
+    if (CONFIG_AFSK_TXWAIT > 0) {
+        ticks_t wait_start = timer_clock();
+        long wait_ticks = ms_to_ticks(CONFIG_AFSK_TXWAIT);
+        while (timer_clock() - wait_start < wait_ticks) {
+            cpu_relax();
+        }
+    }
     while (!sent) {
         //puts("Waiting in CSMA");
-        if(!channel->hdlc.receiving) {
+        if(!channel->hdlc.dcd) {
             uint8_t tp = rand() & 0xFF;
             if (tp < p) {
                 ax25_sendRaw(ctx, buf, len);
@@ -75,9 +94,15 @@ void kiss_csma(AX25Ctx *ctx, uint8_t *buf, size_t len) {
                 }
             }
         }
-
     }
-    
+
+    if (FLOWCONTROL) {
+        while (!ctx->ready_for_data) { /* Wait */ }
+        fputc(FEND, &serial->uart0);
+        fputc(CMD_READY, &serial->uart0);
+        fputc(0x01, &serial->uart0);
+        fputc(FEND, &serial->uart0);
+    }
 }
 
 void kiss_serialCallback(uint8_t sbyte) {
@@ -114,7 +139,13 @@ void kiss_serialCallback(uint8_t sbyte) {
             slotTime = sbyte * 10;
         } else if (command == CMD_P) {
             p = sbyte;
-        } 
+        } else if (command == CMD_READY) {
+            if (sbyte == 0x00) {
+                FLOWCONTROL = false;
+            } else {
+                FLOWCONTROL = true;
+            }
+        }
         
     }
 }

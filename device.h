@@ -1,3 +1,9 @@
+// Copyright Mark Qvist / unsigned.io
+// https://unsigned.io/microaprs
+//
+// Licensed under GPL-3.0. For full info,
+// read the LICENSE file.
+
 #include "util/constants.h"
 
 #ifndef DEVICE_CONFIGURATION
@@ -9,7 +15,7 @@
 #define FREQUENCY_CORRECTION 0
 
 // ADC settings
-#define OPEN_SQUELCH false
+#define OPEN_SQUELCH true
 #define ADC_REFERENCE REF_3V3
 // OR
 //#define ADC_REFERENCE REF_5V
@@ -38,17 +44,8 @@
     #define DAC_DDR  DDRD
     #define LED_PORT PORTB
     #define LED_DDR  DDRB
-    #define PTT_PORT PORTD
-    #define PTT_DDR  DDRD
     #define ADC_PORT PORTC
     #define ADC_DDR  DDRC
-    // Pins 3-7 on Port D = Arduino D3 - D7
-    #define DAC_HIGH _BV(7)
-    #define DAC_PINS _BV(7)&_BV(6)&_BV(5)&_BV(4)
-    #define LED_TX   1    // Arduino D9
-    #define LED_RX   2    // Arduino D10
-    #define PTT_TX   3    // Arduino D11
-    #define ADC_NO   0    // Arduino A0
 #endif
 
 #endif

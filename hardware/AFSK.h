@@ -42,7 +42,8 @@ inline static uint8_t sinSample(uint16_t i) {
 #define CONFIG_AFSK_RX_BUFLEN 64
 #define CONFIG_AFSK_TX_BUFLEN 64   
 #define CONFIG_AFSK_RXTIMEOUT 0
-#define CONFIG_AFSK_PREAMBLE_LEN 150UL
+#define CONFIG_AFSK_TXWAIT    0UL
+#define CONFIG_AFSK_PREAMBLE_LEN 350UL
 #define CONFIG_AFSK_TRAILER_LEN 50UL
 #define BIT_STUFF_LEN 5
 
@@ -52,16 +53,14 @@ inline static uint8_t sinSample(uint16_t i) {
 #define SAMPLESPERBIT (SAMPLERATE / BITRATE)
 #define PHASE_INC    1                              // Nudge by an eigth of a sample each adjustment
 
-#if BITRATE == 300
-    #define FILTER_CUTOFF 600
-    #define MARK_FREQ  1600
-    #define SPACE_FREQ 1800
-    #define PHASE_BITS   10                         // How much to increment phase counter each sample
-#elif BITRATE == 960
+#define DCD_MIN_COUNT 6
+#define DCD_TIMEOUT_SAMPLES 96
+                       
+#if BITRATE == 960
     #define FILTER_CUTOFF 600
     #define MARK_FREQ  960
     #define SPACE_FREQ 1600
-    #define PHASE_BITS   10
+    #define PHASE_BITS   10                         // How much to increment phase counter each sample
 #elif BITRATE == 1200
     #define FILTER_CUTOFF 600
     #define MARK_FREQ  1200
@@ -72,11 +71,6 @@ inline static uint8_t sinSample(uint16_t i) {
     #define MARK_FREQ  1600
     #define SPACE_FREQ 2600
     #define PHASE_BITS   8
-#elif BITRATE == 2400
-    #define FILTER_CUTOFF 1600
-    #define MARK_FREQ  2400
-    #define SPACE_FREQ 4200
-    #define PHASE_BITS   4
 #else
     #error Unsupported bitrate!
 #endif
@@ -90,6 +84,8 @@ typedef struct Hdlc
     uint8_t bitIndex;
     uint8_t currentByte;
     bool receiving;
+    bool dcd;
+    uint8_t dcd_count;
 } Hdlc;
 
 typedef struct Afsk
@@ -113,10 +109,13 @@ typedef struct Afsk
     uint16_t phaseAcc;                      // Phase accumulator
     uint16_t phaseInc;                      // Phase increment per sample
 
+    uint8_t silentSamples;                 // How many samples were completely silent
+
     FIFOBuffer txFifo;                      // FIFO for transmit data
-    uint8_t txBuf[CONFIG_AFSK_TX_BUFLEN];   // Actial data storage for said FIFO
+    uint8_t txBuf[CONFIG_AFSK_TX_BUFLEN];   // Actual data storage for said FIFO
 
     volatile bool sending;                  // Set when modem is sending
+    volatile bool sending_data;             // Set when modem is sending data
 
     // Demodulation values
     FIFOBuffer delayFifo;                   // Delayed FIFO for frequency discrimination
@@ -142,27 +141,20 @@ typedef struct Afsk
 
 #define AFSK_DAC_IRQ_START()   do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = true; } while (0)
 #define AFSK_DAC_IRQ_STOP()    do { extern bool hw_afsk_dac_isr; hw_afsk_dac_isr = false; } while (0)
-// DAC_PINS equals b11111000 which on port D on Arduino sets D3, D4, D5, D6, D7
-// to be outputs.
-#define AFSK_DAC_INIT()        do { DAC_DDR |= DAC_PINS; } while (0)
+#define AFSK_DAC_INIT()        do { DAC_DDR |= 0xF8; } while (0)
 
 // Here's some macros for controlling the RX/TX LEDs
 // THE _INIT() functions writes to the DDRB register
 // to configure the pins as output pins, and the _ON()
 // and _OFF() functions writes to the PORT registers
 // to turn the pins on or off.
-#define LED_TX_INIT() do { LED_DDR |= _BV(LED_TX); } while (0)
-#define LED_TX_ON()   do { LED_PORT |= _BV(LED_TX); } while (0)
-#define LED_TX_OFF()  do { LED_PORT &= ~_BV(LED_TX); } while (0)
+#define LED_TX_INIT() do { LED_DDR |= _BV(1); } while (0)
+#define LED_TX_ON()   do { LED_PORT |= _BV(1); } while (0)
+#define LED_TX_OFF()  do { LED_PORT &= ~_BV(1); } while (0)
 
-#define LED_RX_INIT() do { LED_DDR |= _BV(LED_RX); } while (0)
-#define LED_RX_ON()   do { LED_PORT |= _BV(LED_RX); } while (0)
-#define LED_RX_OFF()  do { LED_PORT &= ~_BV(LED_RX); } while (0)
-
-// Along the same lines, these initialize and control the PTT signal
-#define PTT_INIT()    do { PTT_DDR |= _BV(PTT_TX); } while (0)
-#define PTT_TX_ON()   do { PTT_PORT |= _BV(PTT_TX); } while (0)
-#define PTT_TX_OFF()  do { PTT_PORT &= ~_BV(PTT_TX); } while (0)
+#define LED_RX_INIT() do { LED_DDR |= _BV(2); } while (0)
+#define LED_RX_ON()   do { LED_PORT |= _BV(2); } while (0)
+#define LED_RX_OFF()  do { LED_PORT &= ~_BV(2); } while (0)
 
 void AFSK_init(Afsk *afsk);
 void AFSK_transmit(char *buffer, size_t size);

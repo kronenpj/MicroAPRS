@@ -1,3 +1,9 @@
+// Copyright Mark Qvist / unsigned.io
+// https://unsigned.io/microaprs
+//
+// Licensed under GPL-3.0. For full info,
+// read the LICENSE file.
+//
 // Based on work by Francesco Sacchi
 
 #include <string.h>
@@ -12,11 +18,13 @@
 #define DECODE_CALL(buf, addr) for (unsigned i = 0; i < sizeof((addr)); i++) { char c = (*(buf)++ >> 1); (addr)[i] = (c == ' ') ? '\x0' : c; }
 #define AX25_SET_REPEATED(msg, idx, val) do { if (val) { (msg)->rpt_flags |= _BV(idx); } else { (msg)->rpt_flags &= ~_BV(idx) ; } } while(0)
 
-void ax25_init(AX25Ctx *ctx, FILE *channel, ax25_callback_t hook) {
+void ax25_init(AX25Ctx *ctx, Afsk *modem, FILE *channel, ax25_callback_t hook) {
     memset(ctx, 0, sizeof(*ctx));
     ctx->ch = channel;
+    ctx->modem = modem;
     ctx->hook = hook;
     ctx->crc_in = ctx->crc_out = CRC_CCIT_INIT_VAL;
+    ctx->ready_for_data = true;
 }
 
 static void ax25_decode(AX25Ctx *ctx) {
@@ -93,6 +101,7 @@ void ax25_poll(AX25Ctx *ctx) {
         }
         ctx->escape = false;
     }
+
 }
 
 static void ax25_putchar(AX25Ctx *ctx, uint8_t c)
@@ -103,6 +112,7 @@ static void ax25_putchar(AX25Ctx *ctx, uint8_t c)
 }
 
 void ax25_sendRaw(AX25Ctx *ctx, void *_buf, size_t len) {
+    ctx->ready_for_data = false;
     ctx->crc_out = CRC_CCIT_INIT_VAL;
     fputc(HDLC_FLAG, ctx->ch);
     const uint8_t *buf = (const uint8_t *)_buf;
@@ -114,6 +124,8 @@ void ax25_sendRaw(AX25Ctx *ctx, void *_buf, size_t len) {
     ax25_putchar(ctx, crch);
 
     fputc(HDLC_FLAG, ctx->ch);
+
+    ctx->ready_for_data = true;
 }
 
 #if SERIAL_PROTOCOL == PROTOCOL_SIMPLE_SERIAL

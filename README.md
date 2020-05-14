@@ -1,6 +1,8 @@
 MicroAPRS
 ==========
 
+__Important!__ _For new projects, please consider using [OpenModem](https://github.com/markqvist/OpenModem) as a platform instead. It is much more powerful, and has none of the limitations of this implementation. For simple projects, MicroAPRS is absolutely still usable, and it is incredibly stable and well-tested in thousands of hours of real-life usage, but have a look at OpenModem as well, since that is what I will be maintaining from now on. No new features or updates will be added to MicroAPRS from here on. I consider it stable and feature-complete for what the hardware is capable of._
+
 MicroAPRS is an APRS firmware for [MicroModem](http://unsigned.io/micromodem). It supports both normal KISS mode, and a simple serial protocol for easy communication with an Arduino, or other MCU.
 
 You can buy a complete modem from [my shop](http://unsigned.io/shop), or you can build one yourself pretty easily. Take a look at the documentation in the [MicroModem](https://github.com/markqvist/MicroModem) repository for information and getting started guides!
@@ -24,11 +26,15 @@ You can buy a complete modem from [my shop](http://unsigned.io/shop), or you can
 
 When the modem is running in KISS mode, there's really not much more to it than connecting the modem to a computer, opening whatever program you want to use with it, and off you go.
 
+When in KISS mode, the preamble time, tail time, persistence and slot time parameters can be configured by the default KISS commands for these. See KISS.h and KISS.c for more info on the configuration command syntax. 
+
+It's important to note that some programs (Xastir, for example) will reset the modem when connecting to it, and then immediately send configuration commands. Depending on your hardware, this might have the unfortunate effect that the configuration commands are sent to the bootloader, instead of the booted firmware. If your program does not allow you to disable resetting or to set a delay for sending the configuration commands, you can manually disable the reset functionality by connecting a resistor of around 100 ohms between the VCC and DTR pins. This will ensure that the modem is not reset, even if the host program sends a reset command.
+
 ## Modem control - SimpleSerial
 
 If you want to use the SimpleSerial protocol, here's how to control the APRS modem over a serial connection. The modem accepts a variety of commands for setting options and sending packets. Generally a command starts with one or more characters defining the command, and then whatever data is needed to set the options for that command. Here's a list of the currently available commands:
 
-##Serial commands
+## Serial commands
 
 Command | Description
 --- | :---
@@ -91,7 +97,7 @@ __To send an APRS message to ZZ5ABC-1 with the content "Hi there!", send these c
 ```
 mcZZ5ABC
 ms1
-#Hi there!
+# Hi there!
 ```
 
 __To send a location update, with the comment "MicroAPRS", you can do something like this:__
@@ -117,7 +123,7 @@ When saving the configuration, it is written to EEPROM, so it will persist betwe
 
 To connect to the modem use __9600 baud, 8N1__ serial. By default, the firmware uses time-sensitive input, which means that it will buffer serial data as it comes in, and when it has received no data for a few milliseconds, it will start interpreting whatever it has received. This means you need to set your serial terminal program to not send data for every keystroke, but only on new-line, or pressing send or whatever. If you do not want this behaviour, you can compile the firmware with the DEBUG flag set, which will make the modem wait for a new-line character before interpreting the received data. I would generally advise against this though, since it means that you cannot have newline characters in whatever data you want to send!
 
-![MicroModem](https://raw.githubusercontent.com/markqvist/MicroModem/master/Design/Images/1.jpg)
+![MicroModem](https://unsigned.io/wp-content/uploads/2014/11/A1-1024x731.jpg)
 
 The project has been implemented in your normal C with makefile style, and uses AVR Libc. The firmware is compatible with Arduino-based products, although it was not written in the Arduino IDE.
 

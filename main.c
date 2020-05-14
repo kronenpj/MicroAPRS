@@ -1,3 +1,9 @@
+// Copyright Mark Qvist / unsigned.io
+// https://unsigned.io/microaprs
+//
+// Licensed under GPL-3.0. For full info,
+// read the LICENSE file.
+
 #include <stdbool.h>
 #include <avr/io.h>
 
@@ -41,7 +47,7 @@ void init(void) {
     sei();
 
     AFSK_init(&modem);
-    ax25_init(&AX25, &modem.fd, ax25_callback);
+    ax25_init(&AX25, &modem, &modem.fd, ax25_callback);
 
     serial_init(&serial);    
     stdout = &serial.uart0;
